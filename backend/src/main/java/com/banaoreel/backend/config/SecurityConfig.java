@@ -1,6 +1,7 @@
 package com.banaoreel.backend.config;
 
 import com.banaoreel.backend.security.JwtAuthFilter;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -17,6 +18,24 @@ public class SecurityConfig {
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
+    }
+
+    /**
+     * JwtAuthFilter is also @Component-annotated (needed so Spring can inject
+     * JwtService into it), which makes Spring Boot auto-register it as a
+     * GLOBAL servlet filter running outside Spring Security's own chain --
+     * separate from the addFilterBefore() registration below. That global
+     * copy runs before Spring Security establishes its request-scoped
+     * SecurityContext, which then gets cleared right after, silently wiping
+     * out the authentication this filter just set. Disabling the automatic
+     * registration here means only the addFilterBefore() copy (correctly
+     * positioned inside the security chain) actually runs.
+     */
+    @Bean
+    public FilterRegistrationBean<JwtAuthFilter> disableAutoRegistration(JwtAuthFilter filter) {
+        FilterRegistrationBean<JwtAuthFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
     }
 
     @Bean

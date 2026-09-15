@@ -49,9 +49,18 @@ class WalletViewModel @Inject constructor(
     fun refresh() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
-            val wallet = walletRepository.getWallet()
-            val txns = walletRepository.getTransactions()
-            _uiState.value = WalletUiState(wallet = wallet, transactions = txns, isLoading = false)
+            try {
+                val wallet = walletRepository.getWallet()
+                val txns = walletRepository.getTransactions()
+                _uiState.value = _uiState.value.copy(
+                    wallet = wallet, transactions = txns, isLoading = false, errorMessage = null
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = e.message ?: "Couldn't load your wallet"
+                )
+            }
         }
     }
 

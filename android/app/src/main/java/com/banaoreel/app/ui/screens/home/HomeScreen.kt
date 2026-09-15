@@ -70,6 +70,8 @@ fun HomeScreen(
                 Box(Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = ReelRose)
                 }
+            } else if (state.errorMessage != null) {
+                Text(state.errorMessage, color = MaterialTheme.colorScheme.error)
             } else if (state.recentJobs.isEmpty()) {
                 EmptyJobsState()
             } else {

@@ -15,7 +15,8 @@ import javax.inject.Inject
 data class HomeUiState(
     val wallet: Wallet? = null,
     val recentJobs: List<VideoJob> = emptyList(),
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val errorMessage: String? = null
 )
 
 @HiltViewModel
@@ -29,9 +30,18 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val wallet = walletRepository.getWallet()
-            val jobs = videoRepository.listVideos()
-            _uiState.value = HomeUiState(wallet = wallet, recentJobs = jobs, isLoading = false)
+            try {
+                val wallet = walletRepository.getWallet()
+                val jobs = videoRepository.listVideos()
+                _uiState.value = HomeUiState(wallet = wallet, recentJobs = jobs, isLoading = false)
+            } catch (e: Exception) {
+                // Surfaced instead of silently leaving wallet=null (which the UI
+                // would otherwise render as an innocuous-looking ₹0 balance).
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = e.message ?: "Couldn't load your account"
+                )
+            }
         }
     }
 }
