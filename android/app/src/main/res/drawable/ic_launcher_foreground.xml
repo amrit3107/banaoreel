@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Placeholder mark: a play triangle inside the adaptive icon's safe zone
+  (inner 66dp circle), fitting a video-generation app. Swap this for real
+  brand art later via Android Studio's Image Asset tool (right-click res/ ->
+  New -> Image Asset) whenever you have a logo.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M40,34 L76,54 L40,74 Z"/>
+</vector>

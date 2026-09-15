@@ -2,7 +2,6 @@ package com.banaoreel.app.di
 
 import com.banaoreel.app.data.api.BanaoReelApi
 import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -37,7 +36,12 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideMoshi(): Moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
+    fun provideMoshi(): Moshi = Moshi.Builder().build()
+    // Note: no KotlinJsonAdapterFactory here on purpose — every data class in
+    // data/model/ is annotated with @JsonClass(generateAdapter = true), which
+    // Moshi's codegen (via KSP) picks up automatically without needing
+    // reflection at runtime. Faster and avoids a whole class of Moshi
+    // reflection crashes on obfuscated/minified release builds.
 
     @Provides
     @Singleton

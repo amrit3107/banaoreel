@@ -3,8 +3,10 @@ package com.banaoreel.app.ui.screens.preview
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -35,17 +37,27 @@ fun PreviewScreen(
                     CircularProgressIndicator()
                 }
             } else {
+                // Player is hoisted with `remember` and explicitly released via
+                // DisposableEffect -- creating it inside AndroidView's factory
+                // (the original version) leaks it every time this screen leaves
+                // composition, since factory only runs once and nothing ever
+                // called player.release().
+                val player = remember(videoUrl) {
+                    ExoPlayer.Builder(context).build().apply {
+                        setMediaItem(MediaItem.fromUri(videoUrl))
+                        prepare()
+                        playWhenReady = true
+                        repeatMode = androidx.media3.common.Player.REPEAT_MODE_ONE
+                    }
+                }
+
+                DisposableEffect(player) {
+                    onDispose { player.release() }
+                }
+
                 AndroidView(
                     modifier = Modifier.weight(1f).fillMaxWidth(),
-                    factory = {
-                        val player = ExoPlayer.Builder(context).build().apply {
-                            setMediaItem(MediaItem.fromUri(videoUrl))
-                            prepare()
-                            playWhenReady = true
-                            repeatMode = androidx.media3.common.Player.REPEAT_MODE_ONE
-                        }
-                        PlayerView(context).apply { this.player = player }
-                    }
+                    factory = { PlayerView(context).apply { this.player = player } }
                 )
 
                 Spacer(Modifier.height(16.dp))
