@@ -14,10 +14,11 @@ class AuthRepository @Inject constructor(
         api.requestOtp(mapOf("phone" to phone))
     }
 
-    suspend fun verifyOtp(phone: String, otp: String) {
+    /** Returns true if the user still needs to complete onboarding (no name on file yet). */
+    suspend fun verifyOtp(phone: String, otp: String): Boolean {
         val response = api.verifyOtp(mapOf("phone" to phone, "otp" to otp))
-        val token = response["token"] ?: error("No token returned")
-        tokenStore.saveToken(token)
+        tokenStore.saveToken(response.token)
+        return !response.profileComplete
     }
 
     suspend fun isLoggedIn(): Boolean = tokenStore.getToken() != null

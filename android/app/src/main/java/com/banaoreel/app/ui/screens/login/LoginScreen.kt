@@ -28,13 +28,13 @@ private const val OTP_LENGTH = 6
 
 @Composable
 fun LoginScreen(
-    onLoggedIn: () -> Unit,
+    onLoggedIn: (needsOnboarding: Boolean) -> Unit,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
 
     LaunchedEffect(state.loggedIn) {
-        if (state.loggedIn) onLoggedIn()
+        if (state.loggedIn) onLoggedIn(state.needsOnboarding)
     }
 
     if (state.step == LoginStep.CHECKING_SESSION) {

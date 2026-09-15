@@ -17,6 +17,9 @@ public class User {
 
     private String name;
 
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
+
     private String fcmToken;
 
     @Column(nullable = false)
@@ -27,7 +30,14 @@ public class User {
     public void setPhone(String phone) { this.phone = phone; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+    public Gender getGender() { return gender; }
+    public void setGender(Gender gender) { this.gender = gender; }
     public String getFcmToken() { return fcmToken; }
     public void setFcmToken(String fcmToken) { this.fcmToken = fcmToken; }
     public Instant getCreatedAt() { return createdAt; }
+
+    /** A user counts as onboarded once they've supplied at least their name. */
+    public boolean isProfileComplete() {
+        return name != null && !name.isBlank();
+    }
 }

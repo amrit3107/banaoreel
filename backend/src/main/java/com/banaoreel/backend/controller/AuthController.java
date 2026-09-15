@@ -1,5 +1,6 @@
 package com.banaoreel.backend.controller;
 
+import com.banaoreel.backend.dto.AuthResponse;
 import com.banaoreel.backend.entity.User;
 import com.banaoreel.backend.repository.UserRepository;
 import com.banaoreel.backend.security.JwtService;
@@ -32,7 +33,7 @@ public class AuthController {
     }
 
     @PostMapping("/otp/verify")
-    public Map<String, String> verifyOtp(@RequestBody Map<String, String> body) {
+    public AuthResponse verifyOtp(@RequestBody Map<String, String> body) {
         String phone = body.get("phone");
         String otp = body.get("otp");
 
@@ -47,6 +48,6 @@ public class AuthController {
         });
 
         String token = jwtService.issueToken(user.getId());
-        return Map.of("token", token, "userId", user.getId().toString());
+        return new AuthResponse(token, user.getId().toString(), user.getName(), user.isProfileComplete());
     }
 }

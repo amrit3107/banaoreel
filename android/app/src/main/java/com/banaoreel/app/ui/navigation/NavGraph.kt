@@ -10,12 +10,14 @@ import com.banaoreel.app.ui.screens.history.HistoryScreen
 import com.banaoreel.app.ui.screens.home.HomeScreen
 import com.banaoreel.app.ui.screens.jobstatus.JobStatusScreen
 import com.banaoreel.app.ui.screens.login.LoginScreen
+import com.banaoreel.app.ui.screens.onboarding.OnboardingScreen
 import com.banaoreel.app.ui.screens.preview.PreviewScreen
 import com.banaoreel.app.ui.screens.profile.ProfileScreen
 import com.banaoreel.app.ui.screens.wallet.WalletScreen
 
 private object Routes {
     const val LOGIN = "login"
+    const val ONBOARDING = "onboarding"
     const val HOME = "home"
     const val CREATE = "create"
     const val JOB_STATUS = "job_status/{jobId}"
@@ -34,9 +36,20 @@ fun BanaoReelNavGraph(navController: NavHostController = rememberNavController()
 
         composable(Routes.LOGIN) {
             LoginScreen(
-                onLoggedIn = {
-                    navController.navigate(Routes.HOME) {
+                onLoggedIn = { needsOnboarding ->
+                    val destination = if (needsOnboarding) Routes.ONBOARDING else Routes.HOME
+                    navController.navigate(destination) {
                         popUpTo(Routes.LOGIN) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(Routes.ONBOARDING) {
+            OnboardingScreen(
+                onComplete = {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.ONBOARDING) { inclusive = true }
                     }
                 }
             )

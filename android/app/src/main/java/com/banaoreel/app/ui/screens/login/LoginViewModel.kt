@@ -3,6 +3,7 @@ package com.banaoreel.app.ui.screens.login
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.banaoreel.app.data.repository.AuthRepository
+import com.banaoreel.app.data.repository.ProfileRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -23,12 +24,14 @@ data class LoginUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val loggedIn: Boolean = false,
+    val needsOnboarding: Boolean = false,
     val resendSecondsLeft: Int = 0
 )
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val profileRepository: ProfileRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -39,7 +42,15 @@ class LoginViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             if (authRepository.isLoggedIn()) {
-                _uiState.value = _uiState.value.copy(loggedIn = true)
+                // A stored token doesn't guarantee onboarding was finished
+                // (e.g. the app could've been closed mid-onboarding on a
+                // previous run) -- check the real profile before deciding.
+                val needsOnboarding = try {
+                    profileRepository.getMyProfile().name.isNullOrBlank()
+                } catch (e: Exception) {
+                    false // if the check fails, don't block a returning user from Home
+                }
+                _uiState.value = _uiState.value.copy(loggedIn = true, needsOnboarding = needsOnboarding)
             } else {
                 _uiState.value = _uiState.value.copy(step = LoginStep.ENTER_PHONE)
             }
@@ -113,8 +124,12 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = state.copy(isLoading = true, errorMessage = null)
             try {
-                authRepository.verifyOtp(state.phone, state.otp)
-                _uiState.value = _uiState.value.copy(isLoading = false, loggedIn = true)
+                val needsOnboarding = authRepository.verifyOtp(state.phone, state.otp)
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    loggedIn = true,
+                    needsOnboarding = needsOnboarding
+                )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,

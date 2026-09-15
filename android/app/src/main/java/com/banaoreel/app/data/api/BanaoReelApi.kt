@@ -9,7 +9,13 @@ interface BanaoReelApi {
     suspend fun requestOtp(@Body body: Map<String, String>)
 
     @POST("auth/otp/verify")
-    suspend fun verifyOtp(@Body body: Map<String, String>): Map<String, String>
+    suspend fun verifyOtp(@Body body: Map<String, String>): AuthResponse
+
+    @GET("users/me")
+    suspend fun getMyProfile(): UserProfile
+
+    @PATCH("users/me")
+    suspend fun updateProfile(@Body body: UpdateProfileRequest): UserProfile
 
     @GET("wallet")
     suspend fun getWallet(): Wallet
