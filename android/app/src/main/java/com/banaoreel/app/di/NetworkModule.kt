@@ -12,11 +12,10 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import javax.inject.Singleton
 
-// 10.0.2.2 is the Android emulator's alias for your host machine's localhost.
-// If you're testing on a physical device instead, use your machine's actual
-// LAN IP (e.g. "http://192.168.1.x:8081/") and make sure the device is on the
-// same Wi-Fi and your firewall allows inbound connections on that port.
-private const val BASE_URL = "http://10.0.2.2:8081/" // TODO: move to BuildConfig per environment, switch to https in prod
+// Physical device on the same Wi-Fi as the backend machine -- 10.0.2.2 only
+// works inside the Android emulator, not on real hardware. Update this IP if
+// your machine's LAN address changes (e.g. DHCP lease renewal, new network).
+private const val BASE_URL = "http://10.0.6.217:8081/" // TODO: move to BuildConfig per environment, switch to https in prod
 
 @Module
 @InstallIn(SingletonComponent::class)
