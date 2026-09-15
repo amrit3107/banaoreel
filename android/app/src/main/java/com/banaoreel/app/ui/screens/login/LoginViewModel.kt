@@ -9,10 +9,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-enum class LoginStep { ENTER_PHONE, ENTER_OTP }
+enum class LoginStep { CHECKING_SESSION, ENTER_PHONE, ENTER_OTP }
 
 data class LoginUiState(
-    val step: LoginStep = LoginStep.ENTER_PHONE,
+    val step: LoginStep = LoginStep.CHECKING_SESSION,
     val phone: String = "",
     val otp: String = "",
     val isLoading: Boolean = false,
@@ -27,6 +27,19 @@ class LoginViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState
+
+    init {
+        viewModelScope.launch {
+            // Skip straight to Home if a token is already stored -- this was
+            // missing before, which is why the app asked to log in on every
+            // launch even though TokenStore was already persisting it.
+            if (authRepository.isLoggedIn()) {
+                _uiState.value = _uiState.value.copy(loggedIn = true)
+            } else {
+                _uiState.value = _uiState.value.copy(step = LoginStep.ENTER_PHONE)
+            }
+        }
+    }
 
     fun onPhoneChange(phone: String) {
         _uiState.value = _uiState.value.copy(phone = phone)
