@@ -15,6 +15,13 @@ spring:
 server:
   port: 8080
 
+# Temporary: prints exactly which filter/rule is rejecting a request, to
+# diagnose the POST-only 403. Safe to remove once the 403 is resolved --
+# fairly verbose for normal operation.
+logging:
+  level:
+    org.springframework.security: DEBUG
+
 banaoreel:
   jwt:
     secret: change-this-to-a-long-random-secret-in-prod
