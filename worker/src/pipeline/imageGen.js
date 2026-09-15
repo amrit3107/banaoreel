@@ -3,7 +3,11 @@ import fs from 'fs';
 import path from 'path';
 import axios from 'axios';
 
-const openai = new OpenAI({ apiKey: process.env.IMAGE_GEN_API_KEY });
+let openai;
+function client() {
+  if (!openai) openai = new OpenAI({ apiKey: process.env.IMAGE_GEN_API_KEY });
+  return openai;
+}
 
 /**
  * Generates one image per scene from its imagePrompt using OpenAI's image API.
@@ -15,7 +19,7 @@ export async function generateImages(scenes, jobId, outDir) {
   const imagePaths = [];
 
   for (let i = 0; i < scenes.length; i++) {
-    const result = await openai.images.generate({
+    const result = await client().images.generate({
       model: 'dall-e-3',
       prompt: scenes[i].imagePrompt,
       size: '1024x1792', // portrait, matches short-form vertical video
