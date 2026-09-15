@@ -2,43 +2,51 @@ package com.banaoreel.backend.controller;
 
 import com.banaoreel.backend.entity.User;
 import com.banaoreel.backend.repository.UserRepository;
+import com.banaoreel.backend.security.JwtService;
+import com.banaoreel.backend.service.OtpService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-/**
- * SCAFFOLD ONLY. Real OTP sending (via an SMS provider) and JWT issuance
- * are not implemented yet — wire Firebase Phone Auth or an SMS gateway
- * (e.g. MSG91, Twilio) here, plus real JWT signing using the
- * banaoreel.jwt.secret config value.
- */
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
     private final UserRepository userRepository;
+    private final OtpService otpService;
+    private final JwtService jwtService;
 
-    public AuthController(UserRepository userRepository) {
+    public AuthController(UserRepository userRepository, OtpService otpService, JwtService jwtService) {
         this.userRepository = userRepository;
+        this.otpService = otpService;
+        this.jwtService = jwtService;
     }
 
     @PostMapping("/otp/request")
     public void requestOtp(@RequestBody Map<String, String> body) {
         String phone = body.get("phone");
-        // TODO: call SMS provider to send OTP, store OTP+expiry (e.g. in Redis) keyed by phone
-        System.out.println("[stub] OTP requested for " + phone);
+        if (phone == null || phone.isBlank()) {
+            throw new IllegalArgumentException("phone is required");
+        }
+        otpService.sendOtp(phone);
     }
 
     @PostMapping("/otp/verify")
     public Map<String, String> verifyOtp(@RequestBody Map<String, String> body) {
         String phone = body.get("phone");
-        // TODO: actually validate the OTP against what was stored/sent
+        String otp = body.get("otp");
+
+        if (!otpService.verifyOtp(phone, otp)) {
+            throw new IllegalArgumentException("Invalid or expired OTP");
+        }
+
         User user = userRepository.findByPhone(phone).orElseGet(() -> {
             User u = new User();
             u.setPhone(phone);
             return userRepository.save(u);
         });
-        // TODO: issue a real signed JWT here instead of the raw user id
-        return Map.of("token", user.getId().toString(), "userId", user.getId().toString());
+
+        String token = jwtService.issueToken(user.getId());
+        return Map.of("token", token, "userId", user.getId().toString());
     }
 }

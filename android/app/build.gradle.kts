@@ -61,6 +61,15 @@ dependencies {
 
     implementation("io.coil-kt:coil-compose:2.6.0")
 
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+
+    // Razorpay Android checkout SDK
+    implementation("com.razorpay:checkout:1.6.33")
+
+    // Video preview player
+    implementation("androidx.media3:media3-exoplayer:1.4.0")
+    implementation("androidx.media3:media3-ui:1.4.0")
+
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-messaging-ktx")

@@ -18,6 +18,7 @@ fun HomeScreen(
     onCreateClick: () -> Unit,
     onWalletClick: () -> Unit,
     onJobClick: (String) -> Unit,
+    onHistoryClick: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -27,6 +28,7 @@ fun HomeScreen(
             TopAppBar(
                 title = { Text("BanaoReel") },
                 actions = {
+                    TextButton(onClick = onHistoryClick) { Text("History") }
                     TextButton(onClick = onWalletClick) {
                         val balance = (state.wallet?.balancePaise ?: 0) / 100.0
                         Text("₹%.0f".format(balance))

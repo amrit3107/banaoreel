@@ -19,10 +19,10 @@ async function processJob(jobId, prompt, durationSec) {
     const scenes = await generateScript(prompt, durationSec);
 
     await updateStatus(jobId, 'RENDERING_VISUALS');
-    const imagePaths = await generateImages(scenes, jobId);
+    const imagePaths = await generateImages(scenes, jobId, outDir);
 
     await updateStatus(jobId, 'VOICING');
-    const audioPaths = await generateNarration(scenes, jobId);
+    const audioPaths = await generateNarration(scenes, jobId, outDir);
 
     await updateStatus(jobId, 'ASSEMBLING');
     const localVideoPath = await assembleVideo({ imagePaths, audioPaths, scenes, jobId, outDir });

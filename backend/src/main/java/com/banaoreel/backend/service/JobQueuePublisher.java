@@ -1,17 +1,44 @@
 package com.banaoreel.backend.service;
 
+import com.banaoreel.backend.entity.VideoJob;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import java.util.UUID;
+import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 
-/**
- * Pushes a job id onto the queue that the Node worker service consumes from.
- * TODO: replace this stub with an actual SQS (or Redis/BullMQ-compatible) client.
- * Kept as its own component so the queue tech can change without touching VideoJobService.
- */
+import java.util.Map;
+
 @Component
 public class JobQueuePublisher {
-    public void publish(UUID jobId) {
-        // TODO: sqsClient.sendMessage(queueUrl, jobId.toString());
-        System.out.println("[stub] enqueued job " + jobId);
+
+    private final SqsClient sqsClient;
+    private final String queueUrl;
+
+    public JobQueuePublisher(
+            SqsClient sqsClient,
+            @Value("${banaoreel.worker.queue-url}") String queueUrl
+    ) {
+        this.sqsClient = sqsClient;
+        this.queueUrl = queueUrl;
+    }
+
+    /** Message shape must match what worker/src/index.js expects to parse. */
+    public void publish(VideoJob job) {
+        String body = String.format(
+                "{\"jobId\":\"%s\",\"prompt\":%s,\"durationSec\":%d}",
+                job.getId(),
+                toJsonString(job.getPrompt()),
+                job.getDurationSec()
+        );
+
+        sqsClient.sendMessage(SendMessageRequest.builder()
+                .queueUrl(queueUrl)
+                .messageBody(body)
+                .build());
+    }
+
+    private String toJsonString(String raw) {
+        // Minimal manual escaping to avoid pulling in a JSON lib just for this.
+        return "\"" + raw.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n") + "\"";
     }
 }

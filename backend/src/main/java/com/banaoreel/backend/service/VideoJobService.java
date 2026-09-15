@@ -16,17 +16,20 @@ public class VideoJobService {
     private final WalletService walletService;
     private final PricingService pricingService;
     private final JobQueuePublisher jobQueuePublisher;
+    private final PushNotificationService pushNotificationService;
 
     public VideoJobService(
             VideoJobRepository videoJobRepository,
             WalletService walletService,
             PricingService pricingService,
-            JobQueuePublisher jobQueuePublisher
+            JobQueuePublisher jobQueuePublisher,
+            PushNotificationService pushNotificationService
     ) {
         this.videoJobRepository = videoJobRepository;
         this.walletService = walletService;
         this.pricingService = pricingService;
         this.jobQueuePublisher = jobQueuePublisher;
+        this.pushNotificationService = pushNotificationService;
     }
 
     /**
@@ -52,7 +55,7 @@ public class VideoJobService {
         // rolls back the job row too — the invariant holds either way.
         walletService.debit(userId, costPaise, job.getId());
 
-        jobQueuePublisher.publish(job.getId());
+        jobQueuePublisher.publish(job);
         return job;
     }
 
@@ -85,7 +88,7 @@ public class VideoJobService {
         job.setStatus(JobStatus.DONE);
         job.setVideoUrl(videoUrl);
         videoJobRepository.save(job);
-        // TODO: trigger FCM push to the user here
+        pushNotificationService.notifyJobComplete(job.getUserId());
     }
 
     /** Failure path: mark job failed and auto-refund the wallet, per the product plan. */
@@ -98,6 +101,6 @@ public class VideoJobService {
         videoJobRepository.save(job);
 
         walletService.refund(job.getUserId(), job.getCostPaise(), job.getId());
-        // TODO: trigger FCM push to the user here
+        pushNotificationService.notifyJobFailed(job.getUserId());
     }
 }

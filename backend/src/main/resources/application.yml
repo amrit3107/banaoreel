@@ -24,6 +24,12 @@ banaoreel:
     key-secret: xxx
   worker:
     internal-api-key: change-this-shared-secret
+    queue-url: https://sqs.ap-south-1.amazonaws.com/xxxxxxxxxxxx/banaoreel-video-jobs
+  aws:
+    region: ap-south-1
+  sms:
+    msg91-auth-key: ""
+    msg91-template-id: ""
   pricing:
     tier-15s-paise: 500
     tier-30s-paise: 1000

@@ -17,6 +17,8 @@ public class User {
 
     private String name;
 
+    private String fcmToken;
+
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
 
@@ -25,5 +27,7 @@ public class User {
     public void setPhone(String phone) { this.phone = phone; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+    public String getFcmToken() { return fcmToken; }
+    public void setFcmToken(String fcmToken) { this.fcmToken = fcmToken; }
     public Instant getCreatedAt() { return createdAt; }
 }

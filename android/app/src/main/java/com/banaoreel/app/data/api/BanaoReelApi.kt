@@ -31,4 +31,7 @@ interface BanaoReelApi {
 
     @GET("videos")
     suspend fun listVideos(): List<VideoJob>
+
+    @POST("users/fcm-token")
+    suspend fun updateFcmToken(@Body body: Map<String, String>)
 }
