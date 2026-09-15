@@ -1,0 +1,18 @@
+# Android
+android/.gradle/
+android/local.properties
+android/**/build/
+android/.idea/
+android/*.iml
+
+# Java / Maven
+backend/target/
+backend/.idea/
+backend/*.iml
+
+# Node
+worker/node_modules/
+worker/.env
+
+# OS
+.DS_Store

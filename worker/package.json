@@ -1,0 +1,19 @@
+{
+  "name": "banaoreel-worker",
+  "version": "0.1.0",
+  "description": "Generation worker: pulls video jobs from the queue and runs the script -> images -> TTS -> FFmpeg pipeline",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.27.0",
+    "@aws-sdk/client-s3": "^3.632.0",
+    "@aws-sdk/client-sqs": "^3.632.0",
+    "axios": "^1.7.4",
+    "dotenv": "^16.4.5",
+    "fluent-ffmpeg": "^2.1.3"
+  }
+}

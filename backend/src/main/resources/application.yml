@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: banaoreel-backend
+  datasource:
+    url: jdbc:postgresql://localhost:5432/banaoreel
+    username: banaoreel
+    password: changeme
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: 8080
+
+banaoreel:
+  jwt:
+    secret: change-this-to-a-long-random-secret-in-prod
+    expiry-minutes: 43200 # 30 days
+  razorpay:
+    key-id: rzp_test_xxx
+    key-secret: xxx
+  worker:
+    internal-api-key: change-this-shared-secret
+  pricing:
+    tier-15s-paise: 500
+    tier-30s-paise: 1000
