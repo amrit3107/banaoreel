@@ -10,6 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.banaoreel.app.ui.theme.Mint
+import com.banaoreel.app.ui.theme.ReelGoldDeep
 import com.razorpay.Checkout
 import org.json.JSONObject
 
@@ -50,7 +52,8 @@ fun WalletScreen(viewModel: WalletViewModel = hiltViewModel()) {
         Column(modifier = Modifier.padding(padding).fillMaxSize().padding(16.dp)) {
             Text(
                 "₹%.0f".format((state.wallet?.balancePaise ?: 0) / 100.0),
-                style = MaterialTheme.typography.displaySmall
+                style = MaterialTheme.typography.displayLarge,
+                color = ReelGoldDeep
             )
 
             Spacer(Modifier.height(16.dp))
@@ -58,7 +61,8 @@ fun WalletScreen(viewModel: WalletViewModel = hiltViewModel()) {
                 listOf(50, 100, 200).forEach { amount ->
                     OutlinedButton(
                         onClick = { viewModel.startRecharge(amount) },
-                        modifier = Modifier.padding(end = 8.dp)
+                        modifier = Modifier.padding(end = 8.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = ReelGoldDeep)
                     ) { Text("₹$amount") }
                 }
             }
@@ -72,9 +76,15 @@ fun WalletScreen(viewModel: WalletViewModel = hiltViewModel()) {
             Text("Transactions", style = MaterialTheme.typography.titleMedium)
             LazyColumn {
                 items(state.transactions) { txn ->
+                    val amountColor = if (txn.type == "recharge") Mint else MaterialTheme.colorScheme.onSurface
                     ListItem(
-                        headlineContent = { Text(txn.type) },
-                        trailingContent = { Text("₹%.0f".format(txn.amountPaise / 100.0)) }
+                        headlineContent = { Text(txn.type.replaceFirstChar { it.uppercase() }) },
+                        trailingContent = {
+                            Text(
+                                "₹%.0f".format(txn.amountPaise / 100.0),
+                                color = amountColor
+                            )
+                        }
                     )
                     HorizontalDivider()
                 }

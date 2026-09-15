@@ -7,8 +7,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.banaoreel.app.ui.theme.ReelGoldDeep
+import com.banaoreel.app.ui.theme.ReelRose
 
 @Composable
 fun CreateScreen(
@@ -44,18 +47,30 @@ fun CreateScreen(
                 FilterChip(
                     selected = state.durationSec == 15,
                     onClick = { viewModel.onDurationChange(15) },
-                    label = { Text("15s") }
+                    label = { Text("15s") },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = ReelRose,
+                        selectedLabelColor = Color.White
+                    )
                 )
                 Spacer(Modifier.width(8.dp))
                 FilterChip(
                     selected = state.durationSec == 30,
                     onClick = { viewModel.onDurationChange(30) },
-                    label = { Text("30s") }
+                    label = { Text("30s") },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = ReelRose,
+                        selectedLabelColor = Color.White
+                    )
                 )
             }
 
             Spacer(Modifier.height(16.dp))
-            Text("Cost: ₹%.0f".format(state.costPaise / 100.0), style = MaterialTheme.typography.titleMedium)
+            Text(
+                "Cost: ₹%.0f".format(state.costPaise / 100.0),
+                style = MaterialTheme.typography.titleMedium,
+                color = ReelGoldDeep
+            )
 
             state.errorMessage?.let {
                 Spacer(Modifier.height(8.dp))
@@ -66,7 +81,8 @@ fun CreateScreen(
             Button(
                 onClick = viewModel::submit,
                 enabled = !state.isSubmitting,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = ReelRose)
             ) {
                 Text(if (state.isSubmitting) "Generating..." else "Generate")
             }

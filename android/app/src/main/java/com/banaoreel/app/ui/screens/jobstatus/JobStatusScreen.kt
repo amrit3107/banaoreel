@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.banaoreel.app.data.model.JobStatus
 import com.banaoreel.app.data.model.VideoJob
+import com.banaoreel.app.ui.theme.ReelRose
 
 @Composable
 fun JobStatusScreen(
@@ -38,7 +39,7 @@ fun JobStatusScreen(
                     state.job?.status == JobStatus.FAILED ->
                         Text("Generation failed. Amount refunded to wallet.", color = MaterialTheme.colorScheme.error)
                     else -> {
-                        CircularProgressIndicator()
+                        CircularProgressIndicator(color = ReelRose)
                         Spacer(Modifier.height(16.dp))
                         Text(state.job?.status?.name ?: "QUEUED")
                     }

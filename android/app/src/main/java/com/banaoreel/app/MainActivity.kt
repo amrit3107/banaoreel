@@ -3,12 +3,12 @@ package com.banaoreel.app
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.lifecycle.lifecycleScope
 import com.banaoreel.app.payments.RazorpayResult
 import com.banaoreel.app.payments.RazorpayResultBus
 import com.banaoreel.app.ui.navigation.BanaoReelNavGraph
+import com.banaoreel.app.ui.theme.BanaoReelTheme
 import com.razorpay.PaymentData
 import com.razorpay.PaymentResultWithDataListener
 import dagger.hilt.android.AndroidEntryPoint
@@ -29,7 +29,7 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme {
+            BanaoReelTheme {
                 Surface {
                     BanaoReelNavGraph()
                 }
