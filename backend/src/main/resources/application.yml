@@ -24,14 +24,14 @@ logging:
 
 banaoreel:
   jwt:
-    secret: change-this-to-a-long-random-secret-in-prod
+    secret: ${JWT_SECRET:change-this-to-a-long-random-secret-in-prod}
     expiry-minutes: 43200 # 30 days
   razorpay:
-    key-id: rzp_test_xxx
-    key-secret: xxx
+    key-id: ${RAZORPAY_KEY_ID:rzp_test_xxx}
+    key-secret: ${RAZORPAY_KEY_SECRET:xxx}
   worker:
-    internal-api-key: change-this-shared-secret
-    queue-url: https://sqs.ap-south-1.amazonaws.com/xxxxxxxxxxxx/banaoreel-video-jobs
+    internal-api-key: ${WORKER_INTERNAL_API_KEY:change-this-shared-secret}
+    queue-url: ${SQS_QUEUE_URL:https://sqs.ap-south-1.amazonaws.com/xxxxxxxxxxxx/banaoreel-video-jobs}
   aws:
     region: ap-south-1
   sms:
