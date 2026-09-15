@@ -8,6 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 import javax.inject.Inject
 
 data class CreateUiState(
@@ -16,8 +17,11 @@ data class CreateUiState(
     val costPaise: Int = PricingRules.costForDurationPaise(30),
     val isSubmitting: Boolean = false,
     val errorMessage: String? = null,
+    val insufficientBalance: Boolean = false,
     val createdJobId: String? = null
 )
+
+private const val MAX_PROMPT_LENGTH = 300
 
 @HiltViewModel
 class CreateViewModel @Inject constructor(
@@ -28,7 +32,7 @@ class CreateViewModel @Inject constructor(
     val uiState: StateFlow<CreateUiState> = _uiState
 
     fun onPromptChange(prompt: String) {
-        _uiState.value = _uiState.value.copy(prompt = prompt)
+        _uiState.value = _uiState.value.copy(prompt = prompt.take(MAX_PROMPT_LENGTH))
     }
 
     fun onDurationChange(durationSec: Int) {
@@ -45,17 +49,35 @@ class CreateViewModel @Inject constructor(
             return
         }
         viewModelScope.launch {
-            _uiState.value = state.copy(isSubmitting = true, errorMessage = null)
+            _uiState.value = state.copy(isSubmitting = true, errorMessage = null, insufficientBalance = false)
             try {
                 val job = videoRepository.createVideo(state.prompt, state.durationSec)
                 _uiState.value = _uiState.value.copy(isSubmitting = false, createdJobId = job.id)
+            } catch (e: HttpException) {
+                if (e.code() == 402) {
+                    // Matches the backend's ResponseStatusException(PAYMENT_REQUIRED)
+                    // in VideoJobController when the wallet debit fails.
+                    _uiState.value = _uiState.value.copy(
+                        isSubmitting = false,
+                        insufficientBalance = true,
+                        errorMessage = "Not enough balance for this video"
+                    )
+                } else {
+                    _uiState.value = _uiState.value.copy(
+                        isSubmitting = false,
+                        errorMessage = "Something went wrong. Try again."
+                    )
+                }
             } catch (e: Exception) {
-                // TODO: distinguish "insufficient balance" (redirect to recharge) from other errors
                 _uiState.value = _uiState.value.copy(
                     isSubmitting = false,
-                    errorMessage = e.message ?: "Something went wrong"
+                    errorMessage = "Couldn't reach the server. Check your connection."
                 )
             }
         }
+    }
+
+    fun dismissInsufficientBalance() {
+        _uiState.value = _uiState.value.copy(insufficientBalance = false)
     }
 }

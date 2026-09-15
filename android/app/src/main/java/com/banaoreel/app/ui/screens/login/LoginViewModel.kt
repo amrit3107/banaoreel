@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.banaoreel.app.data.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -11,13 +13,17 @@ import javax.inject.Inject
 
 enum class LoginStep { CHECKING_SESSION, ENTER_PHONE, ENTER_OTP }
 
+private const val OTP_LENGTH = 6
+private const val RESEND_COOLDOWN_SECONDS = 30
+
 data class LoginUiState(
     val step: LoginStep = LoginStep.CHECKING_SESSION,
     val phone: String = "",
     val otp: String = "",
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
-    val loggedIn: Boolean = false
+    val loggedIn: Boolean = false,
+    val resendSecondsLeft: Int = 0
 )
 
 @HiltViewModel
@@ -28,11 +34,10 @@ class LoginViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState
 
+    private var resendTimerJob: Job? = null
+
     init {
         viewModelScope.launch {
-            // Skip straight to Home if a token is already stored -- this was
-            // missing before, which is why the app asked to log in on every
-            // launch even though TokenStore was already persisting it.
             if (authRepository.isLoggedIn()) {
                 _uiState.value = _uiState.value.copy(loggedIn = true)
             } else {
@@ -41,41 +46,87 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    fun onPhoneChange(phone: String) {
-        _uiState.value = _uiState.value.copy(phone = phone)
+    fun onPhoneChange(raw: String) {
+        val digitsOnly = raw.filter { it.isDigit() }.take(10)
+        _uiState.value = _uiState.value.copy(phone = digitsOnly)
     }
 
-    fun onOtpChange(otp: String) {
-        _uiState.value = _uiState.value.copy(otp = otp)
+    fun onOtpChange(raw: String) {
+        val digitsOnly = raw.filter { it.isDigit() }.take(OTP_LENGTH)
+        _uiState.value = _uiState.value.copy(otp = digitsOnly, errorMessage = null)
+        if (digitsOnly.length == OTP_LENGTH) {
+            verifyOtp()
+        }
     }
 
     fun requestOtp() {
         val phone = _uiState.value.phone
         if (phone.length < 10) {
-            _uiState.value = _uiState.value.copy(errorMessage = "Enter a valid phone number")
+            _uiState.value = _uiState.value.copy(errorMessage = "Enter a valid 10-digit phone number")
             return
         }
+        sendOtp(phone)
+    }
+
+    /** Resend uses the same phone already on file; only enabled once the cooldown hits zero. */
+    fun resendOtp() {
+        if (_uiState.value.resendSecondsLeft > 0) return
+        sendOtp(_uiState.value.phone)
+    }
+
+    private fun sendOtp(phone: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
             try {
                 authRepository.requestOtp(phone)
-                _uiState.value = _uiState.value.copy(isLoading = false, step = LoginStep.ENTER_OTP)
+                _uiState.value = _uiState.value.copy(isLoading = false, step = LoginStep.ENTER_OTP, otp = "")
+                startResendTimer()
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(isLoading = false, errorMessage = e.message ?: "Failed to send OTP")
             }
         }
     }
 
+    private fun startResendTimer() {
+        resendTimerJob?.cancel()
+        resendTimerJob = viewModelScope.launch {
+            for (secondsLeft in RESEND_COOLDOWN_SECONDS downTo 0) {
+                _uiState.value = _uiState.value.copy(resendSecondsLeft = secondsLeft)
+                delay(1000)
+            }
+        }
+    }
+
+    fun backToPhoneEntry() {
+        resendTimerJob?.cancel()
+        _uiState.value = _uiState.value.copy(
+            step = LoginStep.ENTER_PHONE,
+            otp = "",
+            errorMessage = null,
+            resendSecondsLeft = 0
+        )
+    }
+
     fun verifyOtp() {
         val state = _uiState.value
+        if (state.isLoading) return // guard against double-submit from onOtpChange auto-trigger
         viewModelScope.launch {
             _uiState.value = state.copy(isLoading = true, errorMessage = null)
             try {
                 authRepository.verifyOtp(state.phone, state.otp)
                 _uiState.value = _uiState.value.copy(isLoading = false, loggedIn = true)
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(isLoading = false, errorMessage = e.message ?: "Invalid OTP")
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = e.message ?: "Invalid OTP",
+                    otp = "" // clear so the boxes are ready for a retry
+                )
             }
         }
+    }
+
+    override fun onCleared() {
+        resendTimerJob?.cancel()
+        super.onCleared()
     }
 }

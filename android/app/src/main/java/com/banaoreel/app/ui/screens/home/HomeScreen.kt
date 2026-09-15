@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -33,6 +34,7 @@ fun HomeScreen(
     onWalletClick: () -> Unit,
     onJobClick: (String) -> Unit,
     onHistoryClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -47,7 +49,9 @@ fun HomeScreen(
                         balancePaise = state.wallet?.balancePaise ?: 0,
                         onClick = onWalletClick
                     )
-                    Spacer(Modifier.width(8.dp))
+                    IconButton(onClick = onProfileClick) {
+                        Icon(Icons.Filled.AccountCircle, contentDescription = "Profile")
+                    }
                 }
             )
         }

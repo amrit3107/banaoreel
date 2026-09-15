@@ -11,6 +11,7 @@ import com.banaoreel.app.ui.screens.home.HomeScreen
 import com.banaoreel.app.ui.screens.jobstatus.JobStatusScreen
 import com.banaoreel.app.ui.screens.login.LoginScreen
 import com.banaoreel.app.ui.screens.preview.PreviewScreen
+import com.banaoreel.app.ui.screens.profile.ProfileScreen
 import com.banaoreel.app.ui.screens.wallet.WalletScreen
 
 private object Routes {
@@ -21,6 +22,7 @@ private object Routes {
     const val PREVIEW = "preview/{jobId}"
     const val WALLET = "wallet"
     const val HISTORY = "history"
+    const val PROFILE = "profile"
 
     fun jobStatus(jobId: String) = "job_status/$jobId"
     fun preview(jobId: String) = "preview/$jobId"
@@ -45,7 +47,8 @@ fun BanaoReelNavGraph(navController: NavHostController = rememberNavController()
                 onCreateClick = { navController.navigate(Routes.CREATE) },
                 onWalletClick = { navController.navigate(Routes.WALLET) },
                 onJobClick = { jobId -> navController.navigate(Routes.jobStatus(jobId)) },
-                onHistoryClick = { navController.navigate(Routes.HISTORY) }
+                onHistoryClick = { navController.navigate(Routes.HISTORY) },
+                onProfileClick = { navController.navigate(Routes.PROFILE) }
             )
         }
 
@@ -55,7 +58,8 @@ fun BanaoReelNavGraph(navController: NavHostController = rememberNavController()
                     navController.navigate(Routes.jobStatus(jobId)) {
                         popUpTo(Routes.HOME)
                     }
-                }
+                },
+                onGoToWallet = { navController.navigate(Routes.WALLET) }
             )
         }
 
@@ -86,6 +90,16 @@ fun BanaoReelNavGraph(navController: NavHostController = rememberNavController()
         composable(Routes.HISTORY) {
             HistoryScreen(
                 onJobClick = { jobId -> navController.navigate(Routes.preview(jobId)) }
+            )
+        }
+
+        composable(Routes.PROFILE) {
+            ProfileScreen(
+                onLoggedOut = {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(0) // clear the entire back stack, not just up to Home
+                    }
+                }
             )
         }
     }

@@ -1,9 +1,24 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
     id("com.google.gms.google-services")
+}
+
+// Release signing: reads from keystore.properties (NOT committed -- see
+// .gitignore) so the actual keystore path/passwords never touch git history.
+// Signing is skipped gracefully if that file doesn't exist yet (e.g. fresh
+// clone, or local debug work), but `assembleRelease`/`bundleRelease` will
+// produce an unsigned artifact until it's created -- see RELEASE.md for the
+// exact keytool command to generate one.
+val keystorePropertiesFile = rootProject.file("app/keystore.properties")
+val keystoreProperties = Properties()
+val hasReleaseSigning = keystorePropertiesFile.exists()
+if (hasReleaseSigning) {
+    keystoreProperties.load(keystorePropertiesFile.inputStream())
 }
 
 android {
@@ -18,18 +33,42 @@ android {
         versionName = "0.1.0"
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+            }
+        }
+    }
+
     buildTypes {
+        debug {
+            // Your machine's LAN IP for physical-device testing -- update
+            // this if your IP changes (DHCP renewal, new network), or point
+            // it at 10.0.2.2 instead if you're testing on the emulator.
+            buildConfigField("String", "BASE_URL", "\"http://10.0.6.217:8081/\"")
+        }
         release {
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // TODO: replace with your real deployed backend's HTTPS domain
+            // before shipping -- this placeholder will not work for real users.
+            buildConfigField("String", "BASE_URL", "\"https://api.banaoreel.com/\"")
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.14"

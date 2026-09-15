@@ -14,5 +14,10 @@ backend/*.iml
 worker/node_modules/
 worker/.env
 
+# Release signing -- NEVER commit these
+android/app/keystore.properties
+android/app/*.jks
+android/app/*.keystore
+
 # OS
 .DS_Store

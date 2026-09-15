@@ -21,4 +21,8 @@ class AuthRepository @Inject constructor(
     }
 
     suspend fun isLoggedIn(): Boolean = tokenStore.getToken() != null
+
+    suspend fun logout() {
+        tokenStore.clear()
+    }
 }

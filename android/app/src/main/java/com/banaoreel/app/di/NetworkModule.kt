@@ -1,5 +1,6 @@
 package com.banaoreel.app.di
 
+import com.banaoreel.app.BuildConfig
 import com.banaoreel.app.data.api.BanaoReelApi
 import com.squareup.moshi.Moshi
 import dagger.Module
@@ -12,11 +13,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import javax.inject.Singleton
 
-// Physical device on the same Wi-Fi as the backend machine -- 10.0.2.2 only
-// works inside the Android emulator, not on real hardware. Update this IP if
-// your machine's LAN address changes (e.g. DHCP lease renewal, new network).
-private const val BASE_URL = "http://10.0.6.217:8081/" // TODO: move to BuildConfig per environment, switch to https in prod
-
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
@@ -25,7 +21,9 @@ object NetworkModule {
     @Singleton
     fun provideOkHttpClient(authInterceptor: AuthInterceptor): OkHttpClient {
         val logging = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
+            // Never log request/response bodies (including auth tokens) in
+            // release builds -- verbose logging is a debug-only convenience.
+            level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
         }
         return OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
@@ -46,7 +44,7 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(client: OkHttpClient, moshi: Moshi): Retrofit =
         Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(BuildConfig.BASE_URL)
             .client(client)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
