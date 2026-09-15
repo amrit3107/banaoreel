@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "5366281845",
+    "project_id": "banaoreel-b78b2",
+    "storage_bucket": "banaoreel-b78b2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:5366281845:android:d58cbbead280b2400daa3c",
+        "android_client_info": {
+          "package_name": "com.banaoreel.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAkG9a14eQihaNJTyGMK17s7BgrI-J8hYQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
