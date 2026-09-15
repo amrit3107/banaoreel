@@ -20,7 +20,7 @@ import org.json.JSONObject
  * backend's banaoreel.razorpay.key-id). Razorpay's Android SDK needs the
  * public key id client-side; the secret stays backend-only.
  */
-private const val RAZORPAY_KEY_ID = "rzp_test_xxx"
+private const val RAZORPAY_KEY_ID = "rzp_test_TcKozs4tBz95JW"
 
 @Composable
 fun WalletScreen(viewModel: WalletViewModel = hiltViewModel()) {
