@@ -40,6 +40,10 @@ android {
     }
     kotlinOptions {
         jvmTarget = "17"
+        // TopAppBar (used on every screen) is still marked experimental in
+        // Material3 1.2.1 -- opting in once here instead of annotating every
+        // screen file individually with @OptIn(ExperimentalMaterial3Api::class).
+        freeCompilerArgs += listOf("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
     }
 }
 
