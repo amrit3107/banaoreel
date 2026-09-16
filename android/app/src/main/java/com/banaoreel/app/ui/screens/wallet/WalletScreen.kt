@@ -68,8 +68,18 @@ fun WalletScreen(viewModel: WalletViewModel = hiltViewModel()) {
             }
 
             state.errorMessage?.let {
-                Spacer(Modifier.height(8.dp))
-                Text(it, color = MaterialTheme.colorScheme.error)
+                Spacer(Modifier.height(12.dp))
+                Surface(
+                    shape = MaterialTheme.shapes.medium,
+                    color = MaterialTheme.colorScheme.error.copy(alpha = 0.1f),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        it,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(14.dp)
+                    )
+                }
             }
 
             Spacer(Modifier.height(24.dp))

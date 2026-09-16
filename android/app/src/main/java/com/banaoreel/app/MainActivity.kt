@@ -13,6 +13,7 @@ import com.razorpay.PaymentData
 import com.razorpay.PaymentResultWithDataListener
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 import javax.inject.Inject
 
 /**
@@ -51,7 +52,24 @@ class MainActivity : ComponentActivity(), PaymentResultWithDataListener {
 
     override fun onPaymentError(code: Int, response: String?, paymentData: PaymentData?) {
         lifecycleScope.launch {
-            razorpayResultBus.emit(RazorpayResult.Failure(response ?: "Payment failed"))
+            razorpayResultBus.emit(RazorpayResult.Failure(friendlyRazorpayError(response)))
+        }
+    }
+
+    /**
+     * Razorpay's SDK hands back its raw API error JSON in `response` (e.g.
+     * {"error":{"code":"BAD_REQUEST_ERROR","description":"Payment
+     * Failed",...}}) -- showing that directly to the user is what was
+     * happening before this fix. Extract just the human-readable description,
+     * with a safe generic fallback if the shape ever changes.
+     */
+    private fun friendlyRazorpayError(response: String?): String {
+        if (response.isNullOrBlank()) return "Payment failed. Please try again."
+        return try {
+            val description = JSONObject(response).optJSONObject("error")?.optString("description")
+            description?.takeIf { it.isNotBlank() } ?: "Payment failed. Please try again."
+        } catch (e: Exception) {
+            "Payment failed. Please try again."
         }
     }
 }
