@@ -26,5 +26,13 @@ try {
   console.log('Play that file to confirm the narration sounds right.');
 } catch (err) {
   console.error('TTS generation failed:', err.message);
+  if (err.response?.data) {
+    // axios error bodies (the actual reason from ElevenLabs) live here --
+    // err.message alone is just the generic HTTP status line.
+    const body = Buffer.isBuffer(err.response.data)
+      ? err.response.data.toString('utf-8')
+      : JSON.stringify(err.response.data);
+    console.error('Response body:', body);
+  }
   process.exit(1);
 }
