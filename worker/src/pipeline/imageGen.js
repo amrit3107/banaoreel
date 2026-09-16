@@ -19,13 +19,12 @@ export async function generateImages(scenes, jobId, outDir) {
 
   for (let i = 0; i < scenes.length; i++) {
     const result = await client().images.generate({
-      model: 'dall-e-3',
+      model: 'gpt-image-1',
       prompt: scenes[i].imagePrompt,
-      size: '1024x1792', // portrait, matches short-form vertical video
+      size: '1024x1536', // portrait, matches short-form vertical video
       n: 1
-      // No response_format here on purpose: OpenAI's current image API
-      // rejects it outright ("Unknown parameter: 'response_format'") --
-      // images now always come back as base64 (b64_json) directly.
+      // No response_format here on purpose: gpt-image-1 always returns
+      // base64 (b64_json) directly and rejects this param outright.
     });
 
     const outPath = path.join(outDir, `scene_${i}.png`);
