@@ -2,7 +2,7 @@ import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
 
-const DEFAULT_VOICE_ID = '21m00Tcm4TlvDq8ikWAM'; // ElevenLabs "Rachel" — swap per style/voice options later
+const DEFAULT_VOICE_ID = 'sTuFDs5r9KT8f6JSiJbq'; // from your ElevenLabs "My Voices" — usable on free tier, unlike premade library voices
 
 /**
  * Synthesizes narration audio per scene via ElevenLabs.
