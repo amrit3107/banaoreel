@@ -1,7 +1,6 @@
 import OpenAI from 'openai';
 import fs from 'fs';
 import path from 'path';
-import axios from 'axios';
 
 let openai;
 function client() {
@@ -23,15 +22,15 @@ export async function generateImages(scenes, jobId, outDir) {
       model: 'dall-e-3',
       prompt: scenes[i].imagePrompt,
       size: '1024x1792', // portrait, matches short-form vertical video
-      n: 1,
-      response_format: 'url'
+      n: 1
+      // No response_format here on purpose: OpenAI's current image API
+      // rejects it outright ("Unknown parameter: 'response_format'") --
+      // images now always come back as base64 (b64_json) directly.
     });
 
-    const imageUrl = result.data[0].url;
     const outPath = path.join(outDir, `scene_${i}.png`);
-
-    const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-    fs.writeFileSync(outPath, response.data);
+    const imageBytes = Buffer.from(result.data[0].b64_json, 'base64');
+    fs.writeFileSync(outPath, imageBytes);
 
     imagePaths.push(outPath);
   }
